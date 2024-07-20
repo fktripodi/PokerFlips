@@ -39,12 +39,13 @@
     <table>
       <thead>
         <tr>
-          <th>WINS</th>
-          <th>PLAYERS</th>
-          <th>W</th>
-          <th>$$</th>
-          <th>D</th>
-          <th>V</th>
+          <th class="table-col-players">PLAYERS</th>
+          <th class="table-col-wins">WINS</th>
+          <th class="table-col-button">+1</th>
+          <th class="table-col-w">W</th>
+          <th class="table-col-money">$$</th>
+          <th class="table-col-d">D</th>
+          <th class="table-col-v">V</th>
         </tr>
       </thead>
       <tbody>
@@ -52,13 +53,11 @@
       </tbody>
     </table>
     <div class="buttons">
-      <button class="button-players" onclick="location.href='Player.html'">PLAYERS</button>
+      <button class="button-players" onclick="location.href='player.html'">PLAYERS</button>
       <button class="button-history">HISTORY</button>
       <button class="button-other">OTHER</button>
       <span id="version-number" class="version-number">v1.0</span>
     </div>
-
-    <!-- Audio Element for the Chip Click Sound -->
     <audio id="chip-sound" src="sounds/caching-chip-value.mp3" preload="auto"></audio>
   </div>
   <script src="js/app.js"></script>

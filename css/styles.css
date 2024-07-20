@@ -1,9 +1,7 @@
-/* styles.css */
-
 /* Root Variables for Easy Manipulation */
 :root {
- --version-number: v18; /* Set the version number here */
-  --chip-margin: 5px; /* Adjust this value to change the spacing between chips */
+  --version-number: v13;
+  --chip-margin: 5px;
   --dark-blue: #1E3A8A;
   --white: #FFFFFF;
   --font-family: Arial, sans-serif;
@@ -14,9 +12,8 @@
   --button-spacing: 20px;
   --button-bg-color: #FFD700;
   --button-text-color: #FFFFFF;
-  --chip-size: 70px; /* Set the consistent size for all chips */
-  --app-title-size: 1.6em; /* Adjust this value to change the size of the app title */
- 
+  --chip-size: 70px;
+  --app-title-size: 1.6em;
 }
 
 /* Utility Classes for Font and Spacing */
@@ -64,7 +61,7 @@ body {
   background-color: var(--dark-blue);
   display: flex;
   align-items: center;
-  justify-content: center; /* Center align title */
+  justify-content: center;
   padding: var(--padding);
   box-sizing: border-box;
 }
@@ -93,7 +90,7 @@ body {
 
 .app-title {
   color: yellow;
-  font-size: var(--app-title-size); /* Use the variable for the app title size */
+  font-size: var(--app-title-size);
   font-weight: bold;
 }
 
@@ -120,7 +117,7 @@ body {
 .chip img {
   width: var(--chip-size);
   height: var(--chip-size);
-  object-fit: cover; /* Ensure the image fits within the specified dimensions */
+  object-fit: cover;
 }
 
 .chip span {
@@ -154,16 +151,17 @@ body {
 }
 
 #game-value {
-  width: 80px; /* Increase the width as needed */
+  width: 80px;
   font-weight: bold;
   font-size: 20px;
-  text-align: center; /* Center align text */
+  text-align: center;
 }
 
 /* Table */
 table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 th, td {
@@ -173,8 +171,8 @@ th, td {
 }
 
 thead th {
-  background-color: #FFD700; /* Yellow */
-  color: var(--dark-blue); /* Dark blue */
+  background-color: #FFD700;
+  color: var(--dark-blue);
   font-weight: bold;
 }
 
@@ -188,6 +186,36 @@ input {
   border: none;
   outline: none;
   padding: 8px;
+}
+
+/* Table Column Widths */
+.table-col-wins {
+  width: 20%;
+  position: relative;
+}
+
+.table-col-players {
+  width: 20%;
+}
+
+.table-col-button {
+  width: 10%;
+}
+
+.table-col-w {
+  width: 10%;
+}
+
+.table-col-money {
+  width: 15%;
+}
+
+.table-col-d {
+  width: 10%;
+}
+
+.table-col-v {
+  width: 15%;
 }
 
 /* Buttons */
