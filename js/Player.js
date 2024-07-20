@@ -33,13 +33,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // Update selected players on the main page
   const updateSelectedPlayersOnMainPage = () => {
     const selectedPlayers = [];
+    const selectedPlayerValues = JSON.parse(localStorage.getItem('selectedPlayerValues')) || [];
     tableBody.querySelectorAll('tr').forEach((tr) => {
       if (tr.querySelector('input[type="checkbox"]').checked) {
         const playerName = tr.querySelectorAll('input[type="text"]')[0].value;
-        selectedPlayers.push({ name: playerName });
+        const playerValue = tr.querySelectorAll('input[type="text"]')[1].value;
+        selectedPlayers.push({ name: playerName, value: playerValue });
       }
     });
     localStorage.setItem('selectedPlayers', JSON.stringify(selectedPlayers));
+    localStorage.setItem('selectedPlayerValues', JSON.stringify(selectedPlayerValues));
     window.dispatchEvent(new Event('storage')); // Trigger storage event to update the main page
   };
 
@@ -102,5 +105,6 @@ document.addEventListener('DOMContentLoaded', () => {
 function clearData() {
   localStorage.removeItem('players');
   localStorage.removeItem('selectedPlayers');
+  localStorage.removeItem('selectedPlayerValues');
   location.reload(); // Reload the page to reflect changes
 }
