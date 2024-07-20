@@ -2,7 +2,7 @@
 
 /* Root Variables for Easy Manipulation */
 :root {
- --version-number: v17; /* Set the version number here */
+ --version-number: v18; /* Set the version number here */
   --chip-margin: 5px; /* Adjust this value to change the spacing between chips */
   --dark-blue: #1E3A8A;
   --white: #FFFFFF;
