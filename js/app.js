@@ -1,279 +1,145 @@
 document.addEventListener('DOMContentLoaded', () => {
-    let players = JSON.parse(localStorage.getItem('players')) || [];
-    let previousPlayers = JSON.parse(localStorage.getItem('previousPlayers')) || [];
-    let gamesPlayed = JSON.parse(localStorage.getItem('gamesPlayed')) || 0;
+  const tableBody = document.querySelector('tbody');
+  const gameValueField = document.getElementById('game-value');
+  const versionNumberElement = document.getElementById('version-number');
+  const chipClickSound = document.getElementById('chip-sound');
+  let selectedPlayerIndex = null; // This will store the index of the selected player
 
-    const restartGameButton = document.getElementById('restart-game');
-    const deletePlayerButton = document.getElementById('delete-player');
-    const playersContainer = document.getElementById('players');
-    const gamesPlayedDisplay = document.getElementById('games-played');
-    const previousPlayersDropdown = document.getElementById('previous-players');
-    const pastPlayersContainer = document.getElementById('past-players');
-    const deletePlayerModal = document.getElementById('delete-player-modal');
-    const deletePlayerDropdown = document.getElementById('delete-player-dropdown');
-    const confirmDeleteButton = document.getElementById('confirm-delete');
-    const closeModal = document.querySelector('.close');
-    const clickSound = document.getElementById('click-sound');
-    let gameValue = 50; // Default game value
+  // Read version number from CSS variable
+  const versionNumber = getComputedStyle(document.documentElement).getPropertyValue('--version-number').trim();
+  versionNumberElement.textContent = versionNumber;
 
-    const chips = document.querySelectorAll('.chip');
-    const customValueInput = document.getElementById('custom-value');
+  // Initial data
+  const initialData = Array.from({ length: 8 }, () => ({
+    wins: '',
+    players: '',
+    w: '',
+    money: '',
+    d: '',
+    v: '',
+  }));
 
-    // Set default selected chip
-    const defaultChip = document.querySelector('.chip-50');
-    defaultChip.classList.add('active');
-    customValueInput.value = defaultChip.dataset.value;
+  // Generate table rows
+  initialData.forEach((row, index) => {
+    const tr = document.createElement('tr');
 
-    chips.forEach(chip => {
-        chip.addEventListener('click', () => {
-            gameValue = parseFloat(chip.dataset.value);
-            customValueInput.value = gameValue; // Update the input field
-            chips.forEach(c => c.classList.remove('active'));
-            chip.classList.add('active');
-        });
-    });
-
-    customValueInput.addEventListener('input', () => {
-        gameValue = parseFloat(customValueInput.value);
-        chips.forEach(c => c.classList.remove('active'));
-    });
-
-    function playSound() {
-        clickSound.play().catch(error => {
-            console.error('Failed to play sound:', error);
-        });
-    }
-
-    function truncateNames() {
-        const playerNameCells = document.querySelectorAll('#players td:nth-child(2)');
-        playerNameCells.forEach(cell => {
-            const name = cell.textContent.trim();
-            if (name.length > 5) {
-                cell.textContent = name.substring(0, 5) + '..';
-            }
-        });
-    }
-
-    function renderPlayers() {
-        playersContainer.innerHTML = '';
-        players.forEach((player, index) => {
-            const playerRow = document.createElement('tr');
-            playerRow.innerHTML = `
-                <td>
-                    <div class="action-buttons">
-                        <button onclick="updatePlayer(${index}, 'win', 1)">+1</button>
-                        <button onclick="updatePlayer(${index}, 'win', 2)">+2</button>
-                        <button onclick="updatePlayer(${index}, 'lose', 1)">-1</button>
-                    </div>
-                </td>
-                <td>${player.name}</td>
-                <td>${player.wins}</td>
-                <td class="results">$${player.result.toFixed(2).replace(/\.00$/, '')}</td>
-                <td><button class="delete-button" onclick="removePlayer(${index})">-</button></td>
-            `;
-            playersContainer.appendChild(playerRow);
-        });
-        truncateNames();
-        renderGamesPlayed();
-        renderPreviousPlayers();
-        updateDeletePlayerDropdown();
-        updateAmounts();
-
-        const actionButtons = document.querySelectorAll('.action-buttons button');
-        actionButtons.forEach(button => {
-            button.addEventListener('click', playSound);
-            button.addEventListener('click', () => {
-                button.classList.add('clicked');
-                setTimeout(() => {
-                    button.classList.remove('clicked');
-                }, 2000);
-            });
-        });
-    }
-
-    function renderGamesPlayed() {
-        gamesPlayedDisplay.textContent = gamesPlayed;
-    }
-
-    function renderPreviousPlayers() {
-        previousPlayersDropdown.innerHTML = '<option value="add" disabled selected>Add Player</option>';
-        previousPlayersDropdown.innerHTML += '<option value="add-new">Add New Player</option>';
-        previousPlayers.forEach(player => {
-            const option = document.createElement('option');
-            option.value = player;
-            option.textContent = player;
-            previousPlayersDropdown.appendChild(option);
-        });
-    }
-
-    window.updatePlayer = (index, action, multiplier = 1) => {
-        const activeChip = document.querySelector('.chip.active');
-        if (!activeChip && isNaN(gameValue)) {
-            alert('Please select a chip value or enter a custom value.');
-            return;
+    Object.keys(row).forEach((column) => {
+      const td = document.createElement('td');
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = row[column];
+      input.addEventListener('input', (e) => {
+        row[column] = e.target.value;
+        if (column === 'players') {
+          saveSelectedPlayers();
         }
+      });
 
-        const adjustedHandValue = gameValue * multiplier;
-        if (action === 'win') {
-            players[index].wins += multiplier;
-            players[index].result += adjustedHandValue * (players.length - 1);
-            players.forEach((player, idx) => {
-                if (idx !== index) {
-                    player.result -= adjustedHandValue;
-                }
-            });
-            gamesPlayed += multiplier;
-        } else if (action === 'lose') {
-            players[index].wins -= multiplier;
-            players[index].result -= adjustedHandValue * (players.length - 1);
-            players.forEach((player, idx) => {
-                if (idx !== index) {
-                    player.result += adjustedHandValue;
-                }
-            });
-            gamesPlayed -= 1;
-        }
-        localStorage.setItem('players', JSON.stringify(players));
-        localStorage.setItem('gamesPlayed', JSON.stringify(gamesPlayed));
-        renderPlayers();
-    };
-
-    window.removePlayer = (index) => {
-        const playerName = players[index].name;
-        players.splice(index, 1);
-        localStorage.setItem('players', JSON.stringify(players));
-        renderPlayers();
-        renderGamesPlayed();
-        addPlayerToDropdown(playerName);
-    };
-
-    function addPlayerToDropdown(playerName) {
-        if (!previousPlayers.includes(playerName)) {
-            previousPlayers.push(playerName);
-            localStorage.setItem('previousPlayers', JSON.stringify(previousPlayers));
-        }
-        renderPreviousPlayers();
-    }
-
-    function renderPastPlayers() {
-        const history = JSON.parse(localStorage.getItem('history')) || {};
-        pastPlayersContainer.innerHTML = '';
-        Object.keys(history).forEach(playerName => {
-            if (history[playerName] !== 0) {
-                const playerRow = document.createElement('tr');
-                playerRow.innerHTML = `
-                    <td>${playerName}</td>
-                    <td>$${history[playerName].toFixed(2).replace(/\.00$/, '')}</td>
-                    <td><button onclick="removePlayerHistory('${playerName}')">Clear History</button></td>
-                `;
-                pastPlayersContainer.appendChild(playerRow);
-            }
-        });
-    }
-
-    window.removePlayerHistory = (playerName) => {
-        const history = JSON.parse(localStorage.getItem('history')) || {};
-        if (history[playerName]) {
-            delete history[playerName];
-            localStorage.setItem('history', JSON.stringify(history));
-            renderPastPlayers();
-        }
-    }
-
-    function updateDeletePlayerDropdown() {
-        deletePlayerDropdown.innerHTML = '';
-        previousPlayers.forEach(player => {
-            const option = document.createElement('option');
-            option.value = player;
-            option.textContent = player;
-            deletePlayerDropdown.appendChild(option);
+      // Highlight all text when clicking on the V column and reinstate dollar sign
+      if (column === 'v') {
+        input.addEventListener('click', (e) => {
+          e.target.select();
         });
 
-        deletePlayerDropdown.size = previousPlayers.length > 0 ? previousPlayers.length : 1;
-    }
+        input.addEventListener('input', (e) => {
+          if (!e.target.value.startsWith('$')) {
+            e.target.value = '$' + e.target.value.replace(/^\$?/, '');
+          }
+          saveSelectedPlayers();
+        });
+      }
 
-    previousPlayersDropdown.addEventListener('change', () => {
-        const selectedPlayer = previousPlayersDropdown.value;
-        if (selectedPlayer === "add-new") {
-            const playerName = prompt("Enter player name:").trim();
-            if (playerName && !previousPlayers.includes(playerName)) {
-                const player = { name: playerName, wins: 0, result: 0 };
-                players.push(player);
-                previousPlayers.push(playerName);
-                localStorage.setItem('previousPlayers', JSON.stringify(previousPlayers));
-                localStorage.setItem('players', JSON.stringify(players));
-                renderPlayers();
-            }
-        } else if (selectedPlayer !== "add") {
-            let player = players.find(p => p.name === selectedPlayer);
-            if (!player) {
-                player = { name: selectedPlayer, wins: 0, result: 0 };
-                players.push(player);
-                previousPlayers = previousPlayers.filter(p => p !== selectedPlayer);
-                localStorage.setItem('players', JSON.stringify(players));
-                localStorage.setItem('previousPlayers', JSON.stringify(previousPlayers));
-                renderPlayers();
-                renderPreviousPlayers();
-            }
+      td.appendChild(input);
+      tr.appendChild(td);
+    });
+
+    tr.addEventListener('click', () => {
+      selectedPlayerIndex = index; // Set the selected player index when the row is clicked
+      document.querySelectorAll('tr').forEach((tr) => tr.classList.remove('selected'));
+      tr.classList.add('selected');
+    });
+
+    tableBody.appendChild(tr);
+  });
+
+  // Load selected players from local storage
+  const loadSelectedPlayers = () => {
+    const selectedPlayers = JSON.parse(localStorage.getItem('selectedPlayers')) || [];
+    const selectedPlayerValues = JSON.parse(localStorage.getItem('selectedPlayerValues')) || [];
+    tableBody.querySelectorAll('tr').forEach((tr, index) => {
+      if (selectedPlayers[index]) {
+        tr.querySelectorAll('input[type="text"]')[1].value = selectedPlayers[index].name;
+        tr.querySelectorAll('input[type="text"]')[5].value = selectedPlayerValues[index] || '';
+      } else {
+        tr.querySelectorAll('input[type="text"]')[1].value = '';
+        tr.querySelectorAll('input[type="text"]')[5].value = '';
+      }
+    });
+  };
+
+  // Save selected players to local storage
+  const saveSelectedPlayers = () => {
+    const selectedPlayers = [];
+    const selectedPlayerValues = [];
+    tableBody.querySelectorAll('tr').forEach((tr) => {
+      const playerName = tr.querySelectorAll('input[type="text"]')[1].value;
+      const playerValue = tr.querySelectorAll('input[type="text"]')[5].value;
+      if (playerName.trim() !== '') {
+        selectedPlayers.push({ name: playerName });
+        selectedPlayerValues.push(playerValue);
+      }
+    });
+    localStorage.setItem('selectedPlayers', JSON.stringify(selectedPlayers));
+    localStorage.setItem('selectedPlayerValues', JSON.stringify(selectedPlayerValues));
+  };
+
+  // Add click event to chips
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const value = chip.getAttribute('data-value');
+      gameValueField.value = value;
+      localStorage.setItem('gameValue', value); // Store game value in localStorage
+      chipClickSound.currentTime = 0; // Reset audio to start
+      chipClickSound.play().catch(error => console.error('Audio playback failed:', error));
+
+      // Update the "V" column for rows where a name exists
+      tableBody.querySelectorAll('tr').forEach((tr) => {
+        const playerName = tr.querySelectorAll('input[type="text"]')[1].value;
+        if (playerName.trim() !== '') {
+          tr.querySelectorAll('input[type="text"]')[5].value = value;
         }
-        previousPlayersDropdown.value = "add";
+      });
+      saveSelectedPlayers();
     });
+  });
 
-    deletePlayerButton.addEventListener('click', () => {
-        updateDeletePlayerDropdown();
-        deletePlayerModal.style.display = 'block';
-    });
+  // Highlight all text when clicking on the game-value field
+  gameValueField.addEventListener('click', () => {
+    gameValueField.select();
+  });
 
-    confirmDeleteButton.addEventListener('click', () => {
-        const selectedOptions = Array.from(deletePlayerDropdown.selectedOptions);
-        selectedOptions.forEach(option => {
-            const playerName = option.value;
-            previousPlayers = previousPlayers.filter(p => p !== playerName);
-        });
-        localStorage.setItem('previousPlayers', JSON.stringify(previousPlayers));
-        updateDeletePlayerDropdown();
-        renderPreviousPlayers();
-    });
-
-    closeModal.addEventListener('click', () => {
-        deletePlayerModal.style.display = 'none';
-    });
-
-    window.onclick = (event) => {
-        if (event.target == deletePlayerModal) {
-            deletePlayerModal.style.display = 'none';
-        }
-    };
-
-    restartGameButton.addEventListener('click', () => {
-        players.forEach(player => {
-            player.result = 0;
-            player.wins = 0;
-        });
-        gamesPlayed = 0;
-        localStorage.setItem('players', JSON.stringify(players));
-        localStorage.setItem('gamesPlayed', JSON.stringify(gamesPlayed));
-        renderPlayers();
-    });
-
-    function updateAmounts() {
-        const amountCells = document.querySelectorAll('#players td:nth-child(4)');
-        amountCells.forEach(cell => {
-            const value = parseFloat(cell.textContent.replace('$', ''));
-            if (value < 0) {
-                cell.classList.add('negative-amount');
-                cell.classList.remove('positive-amount');
-            } else if (value > 0) {
-                cell.classList.add('positive-amount');
-                cell.classList.remove('negative-amount');
-            } else {
-                cell.classList.remove('positive-amount');
-                cell.classList.remove('negative-amount');
-            }
-        });
+  // Add dollar sign automatically in front of new value in game value field
+  gameValueField.addEventListener('input', (e) => {
+    if (!gameValueField.value.startsWith('$')) {
+      gameValueField.value = '$' + gameValueField.value.replace(/^\$?/, '');
     }
+    localStorage.setItem('gameValue', gameValueField.value); // Update game value in localStorage on input
+  });
 
-    renderPlayers();
-    renderGamesPlayed();
-    renderPastPlayers();
+  // Initialize game value with the stored value
+  const initialGameValue = localStorage.getItem('gameValue') || '';
+  gameValueField.value = initialGameValue;
+
+  // Load selected players on page load
+  loadSelectedPlayers();
+
+  // Listen for storage events to update selected players
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'selectedPlayers' || e.key === 'selectedPlayerValues') {
+      loadSelectedPlayers();
+    }
+  });
+
+  // Load selected players on page load
+  loadSelectedPlayers();
 });
