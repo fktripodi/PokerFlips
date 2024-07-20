@@ -38,7 +38,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (tr.querySelector('input[type="checkbox"]').checked) {
         const playerName = tr.querySelectorAll('input[type="text"]')[0].value;
         const playerValue = tr.querySelectorAll('input[type="text"]')[1].value;
-        selectedPlayers.push({ name: playerName, value: playerValue });
+        selectedPlayers.push({ name: playerName });
+        selectedPlayerValues.push(playerValue);
       }
     });
     localStorage.setItem('selectedPlayers', JSON.stringify(selectedPlayers));
