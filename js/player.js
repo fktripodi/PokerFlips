@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
   savePlayersToLocalStorage();
 });
 
-// Add this function at the bottom of Player.js
+// Add this function at the bottom of player.js
 function clearData() {
   localStorage.removeItem('players');
   localStorage.removeItem('selectedPlayers');
